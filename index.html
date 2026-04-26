@@ -177,6 +177,24 @@
     top: 0;
   }
   tbody tr:hover { background: rgba(56, 189, 248, 0.05); }
+  .icon-btn {
+    width: auto;
+    margin: 0;
+    padding: 0.3rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--muted);
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: inherit;
+    font-weight: normal;
+  }
+  .icon-btn:hover { color: var(--accent); border-color: var(--accent); background: transparent; }
+  .icon-btn svg { width: 16px; height: 16px; display: block; }
+  .icon-btn.copied { color: var(--accent-2); border-color: var(--accent-2); }
   td.num { text-align: right; font-variant-numeric: tabular-nums; }
   .pill {
     display: inline-block;
@@ -317,6 +335,12 @@
   const $ = (id) => document.getElementById(id);
 
   const STORAGE_KEY = "solar-string-calc:saves";
+
+  const ICON_COPY = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+  const ICON_CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="20 6 9 17 4 12"/></svg>';
+
+  let lastInputs = null;
+  let lastOpts = [];
 
   function loadSaves() {
     try {
@@ -524,6 +548,9 @@
       return;
     }
 
+    lastInputs = inp;
+    lastOpts = opts;
+
     const rows = opts.map((o, i) => {
       const cls = classify(o, inp.cc, inp.oversizePct);
       const extras = extrasFor(o.p, o.s, o.totalW, o.totalVoc).join("; ");
@@ -536,6 +563,7 @@
         <td>${o.desc}</td>
         <td>${extras}</td>
         <td><span class="pill ${cls.tag}">${cls.label}</span></td>
+        <td><button type="button" class="icon-btn copy-btn" data-idx="${i}" title="Copy as markdown" aria-label="Copy option ${i + 1} as markdown">${ICON_COPY}</button></td>
       </tr>`;
     }).join("");
 
@@ -551,11 +579,78 @@
             <th>Description</th>
             <th>Extras</th>
             <th>Match</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>${rows}</tbody>
       </table>`;
   }
+
+  function formatMarkdown(inp, opt, idx) {
+    const cls = classify(opt, inp.cc, inp.oversizePct);
+    const extras = extrasFor(opt.p, opt.s, opt.totalW, opt.totalVoc);
+    const key = saveKey(inp.cc.name, inp.panel.name);
+    const lines = [];
+    lines.push(`# ${key}`);
+    lines.push("");
+    lines.push("## Charge controller");
+    lines.push(`- Name: ${inp.cc.name}`);
+    lines.push(`- Max input voltage: ${fmt(inp.cc.maxV, 1)} V`);
+    lines.push(`- Max input wattage: ${fmt(inp.cc.maxW)} W`);
+    lines.push("");
+    lines.push("## Solar panel");
+    lines.push(`- Name: ${inp.panel.name}`);
+    lines.push(`- Wattage: ${fmt(inp.panel.w)} W`);
+    lines.push(`- VOC: ${fmt(inp.panel.voc, 1)} V`);
+    lines.push("");
+    lines.push(`## Option ${idx + 1}: ${opt.type}`);
+    lines.push(`- Type: ${opt.type}`);
+    lines.push(`- Total VOC: ${fmt(opt.totalVoc, 1)} V`);
+    lines.push(`- Total wattage: ${fmt(opt.totalW)} W`);
+    lines.push(`- Number of panels: ${opt.totalPanels}`);
+    lines.push(`- Description: ${opt.desc}`);
+    lines.push(`- Extras:`);
+    for (const x of extras) lines.push(`  - ${x}`);
+    lines.push(`- Match: ${cls.label}`);
+    lines.push("");
+    return lines.join("\n");
+  }
+
+  async function copyToClipboard(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return;
+    }
+    const ta = document.createElement("textarea");
+    ta.value = text;
+    ta.setAttribute("readonly", "");
+    ta.style.position = "fixed";
+    ta.style.left = "-9999px";
+    document.body.appendChild(ta);
+    ta.select();
+    try { document.execCommand("copy"); } finally { document.body.removeChild(ta); }
+  }
+
+  $("resultsContainer").addEventListener("click", async (e) => {
+    const btn = e.target.closest(".copy-btn");
+    if (!btn) return;
+    const idx = parseInt(btn.dataset.idx, 10);
+    if (!lastInputs || !lastOpts[idx]) return;
+    const md = formatMarkdown(lastInputs, lastOpts[idx], idx);
+    try {
+      await copyToClipboard(md);
+      btn.innerHTML = ICON_CHECK;
+      btn.classList.add("copied");
+      btn.setAttribute("title", "Copied!");
+      setTimeout(() => {
+        btn.innerHTML = ICON_COPY;
+        btn.classList.remove("copied");
+        btn.setAttribute("title", "Copy as markdown");
+      }, 1500);
+    } catch (err) {
+      btn.setAttribute("title", "Copy failed: " + err.message);
+    }
+  });
 
   $("calc-form").addEventListener("submit", (e) => {
     e.preventDefault();
