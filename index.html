@@ -26,21 +26,28 @@
     line-height: 1.4;
   }
   header {
-    padding: 1rem 1.5rem;
+    padding: 1rem clamp(1rem, 3vw, 2.5rem);
     border-bottom: 1px solid var(--border);
     background: linear-gradient(180deg, #1e293b, #0f172a);
+  }
+  header > div {
+    max-width: 1800px;
+    margin: 0 auto;
   }
   header h1 { margin: 0; font-size: 1.25rem; }
   header p { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.85rem; }
   main {
-    max-width: 1200px;
+    max-width: 1800px;
     margin: 0 auto;
-    padding: 1.5rem;
+    padding: 1.5rem clamp(1rem, 3vw, 2.5rem);
     display: grid;
-    grid-template-columns: 360px 1fr;
+    grid-template-columns: minmax(320px, 380px) 1fr;
     gap: 1.5rem;
   }
-  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  @media (max-width: 800px) {
+    main { grid-template-columns: 1fr; padding: 1rem; }
+    header { padding: 1rem; }
+  }
 
   .card {
     background: var(--panel);
@@ -209,8 +216,10 @@
 </head>
 <body>
 <header>
-  <h1>Solar String Calculator</h1>
-  <p>Generate viable series/parallel string designs from your panel and charge controller specs.</p>
+  <div>
+    <h1>Solar String Calculator</h1>
+    <p>Generate viable series/parallel string designs from your panel and charge controller specs.</p>
+  </div>
 </header>
 
 <main>
