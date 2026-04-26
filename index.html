@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Solar String Calculator</title>
+<style>
+  :root {
+    --bg: #0f172a;
+    --panel: #1e293b;
+    --panel-2: #273449;
+    --text: #e2e8f0;
+    --muted: #94a3b8;
+    --accent: #38bdf8;
+    --accent-2: #22c55e;
+    --warn: #f59e0b;
+    --bad: #ef4444;
+    --border: #334155;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.4;
+  }
+  header {
+    padding: 1rem 1.5rem;
+    border-bottom: 1px solid var(--border);
+    background: linear-gradient(180deg, #1e293b, #0f172a);
+  }
+  header h1 { margin: 0; font-size: 1.25rem; }
+  header p { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.85rem; }
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 1.5rem;
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 1.5rem;
+  }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 1rem 1.25rem;
+  }
+  .card h2 {
+    margin: 0 0 0.75rem;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--accent);
+  }
+  fieldset {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    margin: 0 0 1rem;
+    padding: 0.75rem 1rem 1rem;
+  }
+  legend {
+    padding: 0 0.5rem;
+    color: var(--muted);
+    font-size: 0.8rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  label {
+    display: block;
+    margin-top: 0.5rem;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  input[type="text"], input[type="number"], select {
+    width: 100%;
+    margin-top: 0.25rem;
+    padding: 0.45rem 0.6rem;
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    font-size: 0.9rem;
+  }
+  input:focus, select:focus { outline: 2px solid var(--accent); outline-offset: -1px; }
+
+  .row { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 0.4rem;
+    margin: 0.5rem 0 0;
+  }
+  .options label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    color: var(--text);
+    font-size: 0.85rem;
+  }
+
+  button {
+    width: 100%;
+    margin-top: 0.5rem;
+    padding: 0.6rem;
+    background: var(--accent);
+    color: #0f172a;
+    border: none;
+    border-radius: 4px;
+    font-weight: 600;
+    cursor: pointer;
+    font-size: 0.95rem;
+  }
+  button:hover { background: #0ea5e9; }
+  button.secondary {
+    background: var(--panel-2);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+  button.secondary:hover { background: #334155; }
+  button.danger {
+    background: var(--bad);
+    color: #fff;
+  }
+  button.danger:hover { background: #dc2626; }
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .btn-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-top: 0.5rem;
+  }
+  .status {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    color: var(--muted);
+    min-height: 1em;
+  }
+  .status.ok { color: #86efac; }
+  .status.err { color: #fca5a5; }
+
+  .results {
+    overflow-x: auto;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.85rem;
+  }
+  th, td {
+    text-align: left;
+    padding: 0.55rem 0.6rem;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--panel-2);
+    color: var(--accent);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    position: sticky;
+    top: 0;
+  }
+  tbody tr:hover { background: rgba(56, 189, 248, 0.05); }
+  td.num { text-align: right; font-variant-numeric: tabular-nums; }
+  .pill {
+    display: inline-block;
+    padding: 0.1rem 0.45rem;
+    border-radius: 999px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    background: var(--panel-2);
+    color: var(--muted);
+  }
+  .pill.ok { background: #14532d; color: #bbf7d0; }
+  .pill.warn { background: #78350f; color: #fde68a; }
+  .pill.bad { background: #7f1d1d; color: #fecaca; }
+
+  .summary {
+    color: var(--muted);
+    font-size: 0.85rem;
+    margin: 0 0 0.75rem;
+  }
+  .empty {
+    color: var(--muted);
+    font-style: italic;
+    padding: 1rem;
+  }
+  .note {
+    margin-top: 1rem;
+    color: var(--muted);
+    font-size: 0.75rem;
+    line-height: 1.5;
+  }
+  .note code {
+    background: var(--panel-2);
+    padding: 0 0.25rem;
+    border-radius: 3px;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>Solar String Calculator</h1>
+  <p>Generate viable series/parallel string designs from your panel and charge controller specs.</p>
+</header>
+
+<main>
+  <section class="card" aria-label="Inputs">
+    <h2>Inputs</h2>
+    <form id="calc-form">
+      <fieldset>
+        <legend>Battery</legend>
+        <label>Battery voltage (V)
+          <input type="number" id="battV" min="1" step="0.1" value="48" required>
+        </label>
+      </fieldset>
+
+      <fieldset>
+        <legend>Solar panel</legend>
+        <label>Name
+          <input type="text" id="panelName" value="Generic 440W" required>
+        </label>
+        <div class="row">
+          <label>Wattage (W)
+            <input type="number" id="panelW" min="1" step="1" value="440" required>
+          </label>
+          <label>VOC (V)
+            <input type="number" id="panelVoc" min="1" step="0.1" value="40" required>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Charge controller</legend>
+        <label>Name
+          <input type="text" id="ccName" value="Generic 150V/100A MPPT" required>
+        </label>
+        <div class="row">
+          <label>Max input V
+            <input type="number" id="ccMaxV" min="1" step="0.1" value="150" required>
+          </label>
+          <label>Max input W
+            <input type="number" id="ccMaxW" min="1" step="1" value="5800" required>
+          </label>
+        </div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Saved calculations</legend>
+        <label>Load saved
+          <select id="savedSelect">
+            <option value="">— none saved —</option>
+          </select>
+        </label>
+        <div class="btn-row">
+          <button type="button" id="saveBtn" class="secondary">Save current</button>
+          <button type="button" id="deleteBtn" class="danger" disabled>Delete selected</button>
+        </div>
+        <div id="saveStatus" class="status" aria-live="polite"></div>
+      </fieldset>
+
+      <fieldset>
+        <legend>Design rules</legend>
+        <label>Cold-weather VOC margin (%)
+          <input type="number" id="vocMargin" min="0" max="50" step="1" value="20">
+        </label>
+        <label>Allowed PV oversize (%)
+          <input type="number" id="oversize" min="0" max="100" step="1" value="25">
+        </label>
+        <div class="options">
+          <label><input type="checkbox" id="requireAboveBatt" checked> Require string VOC &gt; battery voltage</label>
+          <label><input type="checkbox" id="includeUndersize" checked> Include partial-output options</label>
+        </div>
+      </fieldset>
+
+      <button type="submit">Calculate</button>
+    </form>
+  </section>
+
+  <section class="card results" aria-label="Results">
+    <h2>String design options</h2>
+    <p class="summary" id="summary">Enter your specs and click Calculate.</p>
+    <div id="resultsContainer"></div>
+    <p class="note">
+      <strong>Notes.</strong>
+      Effective max VOC = controller max input V &times; (1 &minus; cold-weather margin).
+      Cold temperatures raise panel VOC above its rated value, so the margin keeps the array safe at the coldest expected operating temperature.
+      Total array wattage may exceed the controller's rated input by the &ldquo;allowed PV oversize&rdquo; setting (controllers clip excess current at MPPT).
+      String fuse / breaker recommendations follow the common rule of thumb: string fuses required at <code>3+</code> parallel strings.
+      This tool ignores Isc, temperature coefficients, wire run length, and code-specific requirements &mdash; verify against the panel datasheet, controller manual, and local electrical code before installation.
+    </p>
+  </section>
+</main>
+
+<script>
+(function () {
+  "use strict";
+
+  const $ = (id) => document.getElementById(id);
+
+  const STORAGE_KEY = "solar-string-calc:saves";
+
+  function loadSaves() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return {};
+      const parsed = JSON.parse(raw);
+      return parsed && typeof parsed === "object" ? parsed : {};
+    } catch (e) {
+      return {};
+    }
+  }
+
+  function writeSaves(saves) {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(saves));
+  }
+
+  function saveKey(ccName, panelName) {
+    return `${ccName.trim()} - ${panelName.trim()}`;
+  }
+
+  function snapshot() {
+    return {
+      battV: $("battV").value,
+      panelName: $("panelName").value,
+      panelW: $("panelW").value,
+      panelVoc: $("panelVoc").value,
+      ccName: $("ccName").value,
+      ccMaxV: $("ccMaxV").value,
+      ccMaxW: $("ccMaxW").value,
+      vocMargin: $("vocMargin").value,
+      oversize: $("oversize").value,
+      requireAboveBatt: $("requireAboveBatt").checked,
+      includeUndersize: $("includeUndersize").checked,
+      savedAt: new Date().toISOString(),
+    };
+  }
+
+  function applySnapshot(s) {
+    if (!s) return;
+    if (s.battV != null) $("battV").value = s.battV;
+    if (s.panelName != null) $("panelName").value = s.panelName;
+    if (s.panelW != null) $("panelW").value = s.panelW;
+    if (s.panelVoc != null) $("panelVoc").value = s.panelVoc;
+    if (s.ccName != null) $("ccName").value = s.ccName;
+    if (s.ccMaxV != null) $("ccMaxV").value = s.ccMaxV;
+    if (s.ccMaxW != null) $("ccMaxW").value = s.ccMaxW;
+    if (s.vocMargin != null) $("vocMargin").value = s.vocMargin;
+    if (s.oversize != null) $("oversize").value = s.oversize;
+    if (typeof s.requireAboveBatt === "boolean") $("requireAboveBatt").checked = s.requireAboveBatt;
+    if (typeof s.includeUndersize === "boolean") $("includeUndersize").checked = s.includeUndersize;
+  }
+
+  function refreshSavedDropdown(selectKey) {
+    const saves = loadSaves();
+    const sel = $("savedSelect");
+    const keys = Object.keys(saves).sort((a, b) => a.localeCompare(b));
+    sel.innerHTML = "";
+    const placeholder = document.createElement("option");
+    placeholder.value = "";
+    placeholder.textContent = keys.length ? "— select to load —" : "— none saved —";
+    sel.appendChild(placeholder);
+    for (const k of keys) {
+      const opt = document.createElement("option");
+      opt.value = k;
+      opt.textContent = k;
+      sel.appendChild(opt);
+    }
+    if (selectKey && saves[selectKey]) sel.value = selectKey;
+    $("deleteBtn").disabled = !sel.value;
+  }
+
+  function setStatus(msg, kind) {
+    const el = $("saveStatus");
+    el.textContent = msg || "";
+    el.className = "status" + (kind ? " " + kind : "");
+    if (msg) {
+      clearTimeout(setStatus._t);
+      setStatus._t = setTimeout(() => {
+        el.textContent = "";
+        el.className = "status";
+      }, 4000);
+    }
+  }
+
+  function readInputs() {
+    return {
+      battV: parseFloat($("battV").value),
+      panel: {
+        name: $("panelName").value.trim() || "Panel",
+        w: parseFloat($("panelW").value),
+        voc: parseFloat($("panelVoc").value),
+      },
+      cc: {
+        name: $("ccName").value.trim() || "Controller",
+        maxV: parseFloat($("ccMaxV").value),
+        maxW: parseFloat($("ccMaxW").value),
+      },
+      vocMarginPct: parseFloat($("vocMargin").value) || 0,
+      oversizePct: parseFloat($("oversize").value) || 0,
+      requireAboveBatt: $("requireAboveBatt").checked,
+      includeUndersize: $("includeUndersize").checked,
+    };
+  }
+
+  function fmt(n, d = 0) {
+    if (!isFinite(n)) return "–";
+    return n.toLocaleString(undefined, {
+      minimumFractionDigits: d,
+      maximumFractionDigits: d,
+    });
+  }
+
+  function extrasFor(p, s, totalW, totalVoc) {
+    const items = [];
+    if (p === 1) {
+      items.push("1× MC4 pair (string to controller)");
+    } else if (p === 2) {
+      items.push("2× MC4 Y-branch connectors (or 2-string combiner)");
+      items.push("Optional per-string fuses");
+    } else {
+      items.push(`${p}-string combiner box`);
+      items.push(`${p}× per-string DC fuses (sized to panel Isc × 1.56)`);
+    }
+
+    const breakerV = Math.max(150, Math.ceil(totalVoc / 50) * 50);
+    const breakerA = Math.ceil((totalW / Math.max(totalVoc, 1)) * 1.25 / 5) * 5;
+    items.push(`DC isolator/breaker rated ≥ ${breakerV} V, ≥ ${breakerA} A`);
+
+    const ampsApprox = totalW / Math.max(totalVoc, 1);
+    let gauge = "10 AWG";
+    if (ampsApprox > 30) gauge = "8 AWG";
+    if (ampsApprox > 50) gauge = "6 AWG";
+    if (ampsApprox > 65) gauge = "4 AWG";
+    items.push(`PV cable ≈ ${gauge} (run-length dependent)`);
+
+    if (s >= 2) items.push(`${s - 1}× series MC4 jumpers per string`);
+    return items;
+  }
+
+  function classify(opt, cc, oversizePct) {
+    const vocPct = opt.totalVoc / cc.effMaxV;
+    const wPct = opt.totalW / cc.maxW;
+    if (vocPct > 1) return { tag: "bad", label: "VOC over limit" };
+    if (wPct > 1 + oversizePct / 100) return { tag: "bad", label: "Wattage over limit" };
+    if (wPct > 1) return { tag: "warn", label: `Oversized ${Math.round((wPct - 1) * 100)}%` };
+    if (wPct >= 0.85) return { tag: "ok", label: "Well-matched" };
+    if (wPct >= 0.5) return { tag: "warn", label: `Partial (${Math.round(wPct * 100)}%)` };
+    return { tag: "warn", label: `Low (${Math.round(wPct * 100)}%)` };
+  }
+
+  function generateOptions(inp) {
+    const { panel, cc, battV, vocMarginPct, oversizePct, requireAboveBatt, includeUndersize } = inp;
+    const effMaxV = cc.maxV * (1 - vocMarginPct / 100);
+    cc.effMaxV = effMaxV;
+
+    const maxS = Math.floor(effMaxV / panel.voc);
+    const wattCap = cc.maxW * (1 + oversizePct / 100);
+    const maxPanelsByW = Math.floor(wattCap / panel.w);
+
+    const opts = [];
+    for (let s = 1; s <= maxS; s++) {
+      const stringVoc = s * panel.voc;
+      if (requireAboveBatt && stringVoc <= battV) continue;
+      const maxP = Math.floor(maxPanelsByW / s);
+      if (maxP < 1) continue;
+      for (let p = 1; p <= maxP; p++) {
+        const totalW = s * p * panel.w;
+        const totalPanels = s * p;
+        const wPct = totalW / cc.maxW;
+        if (!includeUndersize && wPct < 0.5) continue;
+        opts.push({
+          s, p,
+          type: `${p}P${s}S`,
+          totalVoc: stringVoc,
+          totalW,
+          totalPanels,
+          desc: `${p} parallel string${p > 1 ? "s" : ""} of ${s} panel${s > 1 ? "s" : ""} in series`,
+        });
+      }
+    }
+
+    opts.sort((a, b) => {
+      if (b.totalW !== a.totalW) return b.totalW - a.totalW;
+      if (a.totalPanels !== b.totalPanels) return a.totalPanels - b.totalPanels;
+      return a.p - b.p;
+    });
+    return opts;
+  }
+
+  function render(inp, opts) {
+    const summary = $("summary");
+    const container = $("resultsContainer");
+
+    const effMaxV = inp.cc.effMaxV.toFixed(1);
+    summary.innerHTML =
+      `Panel <strong>${inp.panel.name}</strong> ` +
+      `(${fmt(inp.panel.w)} W, ${fmt(inp.panel.voc, 1)} V VOC) → ` +
+      `Controller <strong>${inp.cc.name}</strong> ` +
+      `(${fmt(inp.cc.maxV, 1)} V max, ${fmt(inp.cc.maxW)} W max). ` +
+      `Effective max VOC after ${inp.vocMarginPct}% cold margin: <strong>${effMaxV} V</strong>. ` +
+      `Wattage cap with ${inp.oversizePct}% oversize: <strong>${fmt(inp.cc.maxW * (1 + inp.oversizePct / 100))} W</strong>.`;
+
+    if (opts.length === 0) {
+      container.innerHTML = `<p class="empty">No valid configurations. Try lowering the cold-weather margin, allowing more oversize, or check that panel VOC fits below the controller's max input.</p>`;
+      return;
+    }
+
+    const rows = opts.map((o, i) => {
+      const cls = classify(o, inp.cc, inp.oversizePct);
+      const extras = extrasFor(o.p, o.s, o.totalW, o.totalVoc).join("; ");
+      return `<tr>
+        <td class="num">${i + 1}</td>
+        <td><strong>${o.type}</strong></td>
+        <td class="num">${fmt(o.totalVoc, 1)} V</td>
+        <td class="num">${fmt(o.totalW)} W</td>
+        <td class="num">${o.totalPanels}</td>
+        <td>${o.desc}</td>
+        <td>${extras}</td>
+        <td><span class="pill ${cls.tag}">${cls.label}</span></td>
+      </tr>`;
+    }).join("");
+
+    container.innerHTML = `
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Type</th>
+            <th>Total VOC</th>
+            <th>Total W</th>
+            <th>Panels</th>
+            <th>Description</th>
+            <th>Extras</th>
+            <th>Match</th>
+          </tr>
+        </thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  $("calc-form").addEventListener("submit", (e) => {
+    e.preventDefault();
+    const inp = readInputs();
+    if (!(inp.panel.voc > 0) || !(inp.panel.w > 0) || !(inp.cc.maxV > 0) || !(inp.cc.maxW > 0)) {
+      $("summary").textContent = "Please enter positive values for panel and controller specs.";
+      $("resultsContainer").innerHTML = "";
+      return;
+    }
+    const opts = generateOptions(inp);
+    render(inp, opts);
+  });
+
+  $("saveBtn").addEventListener("click", () => {
+    const ccName = $("ccName").value.trim();
+    const panelName = $("panelName").value.trim();
+    if (!ccName || !panelName) {
+      setStatus("Charge controller name and panel name are required to save.", "err");
+      return;
+    }
+    const key = saveKey(ccName, panelName);
+    const saves = loadSaves();
+    const existed = !!saves[key];
+    saves[key] = snapshot();
+    try {
+      writeSaves(saves);
+    } catch (e) {
+      setStatus("Could not save (storage full or disabled).", "err");
+      return;
+    }
+    refreshSavedDropdown(key);
+    setStatus(existed ? `Updated: ${key}` : `Saved: ${key}`, "ok");
+  });
+
+  $("savedSelect").addEventListener("change", (e) => {
+    const key = e.target.value;
+    $("deleteBtn").disabled = !key;
+    if (!key) return;
+    const saves = loadSaves();
+    const snap = saves[key];
+    if (!snap) {
+      setStatus("Saved entry not found — refreshing list.", "err");
+      refreshSavedDropdown();
+      return;
+    }
+    applySnapshot(snap);
+    setStatus(`Loaded: ${key}`, "ok");
+    $("calc-form").dispatchEvent(new Event("submit"));
+  });
+
+  $("deleteBtn").addEventListener("click", () => {
+    const key = $("savedSelect").value;
+    if (!key) return;
+    if (!confirm(`Delete saved calculation:\n${key}?`)) return;
+    const saves = loadSaves();
+    delete saves[key];
+    writeSaves(saves);
+    refreshSavedDropdown();
+    setStatus(`Deleted: ${key}`, "ok");
+  });
+
+  refreshSavedDropdown();
+  $("calc-form").dispatchEvent(new Event("submit"));
+})();
+</script>
+</body>
+</html>
