@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Solar String Calculator</title>
+<link rel="icon" type="image/png" href="favicon-dark.png" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" href="favicon-light.png" media="(prefers-color-scheme: light)">
+<link rel="icon" type="image/png" href="favicon-dark.png">
 <style>
   :root {
     --bg: #0f172a;
@@ -33,9 +36,19 @@
   header > div {
     max-width: 1800px;
     margin: 0 auto;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
   }
   header h1 { margin: 0; font-size: 1.25rem; }
   header p { margin: 0.25rem 0 0; color: var(--muted); font-size: 0.85rem; }
+  .logo {
+    width: 56px;
+    height: 56px;
+    flex-shrink: 0;
+    border-radius: 6px;
+    display: block;
+  }
   main {
     max-width: 1800px;
     margin: 0 auto;
@@ -235,8 +248,11 @@
 <body>
 <header>
   <div>
-    <h1>Solar String Calculator</h1>
-    <p>Generate viable series/parallel string designs from your panel and charge controller specs.</p>
+    <img class="logo" src="favicon-dark.png" alt="Solar String Calculator logo">
+    <div>
+      <h1>Solar String Calculator</h1>
+      <p>Generate viable series/parallel string designs from your panel and charge controller specs.</p>
+    </div>
   </div>
 </header>
 
@@ -486,7 +502,7 @@
     if (vocPct > 1) return { tag: "bad", label: "VOC over limit" };
     if (wPct > 1 + oversizePct / 100) return { tag: "bad", label: "Wattage over limit" };
     if (wPct > 1) return { tag: "warn", label: `Oversized ${Math.round((wPct - 1) * 100)}%` };
-    if (wPct >= 0.85) return { tag: "ok", label: "Well-matched" };
+    if (wPct >= 0.85) return { tag: "ok", label: `Well-matched (${Math.round(wPct * 100)}%)` };
     if (wPct >= 0.5) return { tag: "warn", label: `Partial (${Math.round(wPct * 100)}%)` };
     return { tag: "warn", label: `Low (${Math.round(wPct * 100)}%)` };
   }
