@@ -17,3 +17,7 @@ The calculator ignores Isc, panel temperature coefficients, wire run length, and
 ## License
 
 Apache License 2.0 — see [LICENSE-2.0.txt](LICENSE-2.0.txt).
+
+## Credits
+
+Built with [Claude Code](https://claude.com/claude-code), Anthropic's CLI for Claude.
