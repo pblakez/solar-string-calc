@@ -250,6 +250,7 @@
   }
   .pill.ok { background: #14532d; color: #bbf7d0; }
   .pill.warn { background: #78350f; color: #fde68a; }
+  .pill.oversize { background: #fecaca; color: #7f1d1d; }
   .pill.bad { background: #7f1d1d; color: #fecaca; }
 
   .summary {
@@ -537,7 +538,7 @@
     const wPct = opt.totalW / cc.maxW;
     if (vocPct > 1) return { tag: "bad", label: "VOC over limit" };
     if (wPct > 1 + oversizePct / 100) return { tag: "bad", label: "Wattage over limit" };
-    if (wPct > 1) return { tag: "warn", label: `Oversized ${Math.round((wPct - 1) * 100)}%` };
+    if (wPct > 1) return { tag: "oversize", label: `Oversized ${Math.round((wPct - 1) * 100)}%` };
     if (wPct >= 0.85) return { tag: "ok", label: `Well-matched (${Math.round(wPct * 100)}%)` };
     if (wPct >= 0.5) return { tag: "warn", label: `Partial (${Math.round(wPct * 100)}%)` };
     return { tag: "warn", label: `Low (${Math.round(wPct * 100)}%)` };
