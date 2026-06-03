@@ -325,7 +325,7 @@
             <input type="number" id="panelW" min="1" step="1" value="440" required>
           </label>
           <label>VOC (V)
-            <input type="number" id="panelVoc" min="1" step="0.1" value="40" required>
+            <input type="number" id="panelVoc" min="1" step="0.01" value="40" required>
           </label>
         </div>
       </fieldset>
@@ -610,10 +610,10 @@
     const summary = $("summary");
     const container = $("resultsContainer");
 
-    const effMaxV = inp.cc.effMaxV.toFixed(1);
+    const effMaxV = inp.cc.effMaxV.toFixed(2);
     summary.innerHTML =
       `Panel <strong>${inp.panel.name}</strong> ` +
-      `(${fmt(inp.panel.w)} W, ${fmt(inp.panel.voc, 1)} V VOC) → ` +
+      `(${fmt(inp.panel.w)} W, ${fmt(inp.panel.voc, 2)} V VOC) → ` +
       `Controller <strong>${inp.cc.name}</strong> ` +
       `(${fmt(inp.cc.maxV, 1)} V max, ${fmt(inp.cc.maxW)} W max). ` +
       `Effective max VOC after ${inp.vocMarginPct}% cold margin: <strong>${effMaxV} V</strong>. ` +
@@ -633,7 +633,7 @@
       return `<tr>
         <td class="num">${i + 1}</td>
         <td><strong>${o.type}</strong></td>
-        <td class="num">${fmt(o.totalVoc, 1)} V</td>
+        <td class="num">${fmt(o.totalVoc, 2)} V</td>
         <td class="num">${fmt(o.totalW)} W</td>
         <td class="num">${o.totalPanels}</td>
         <td>${o.desc}</td>
@@ -677,11 +677,11 @@
     lines.push("## Solar panel");
     lines.push(`- Name: ${inp.panel.name}`);
     lines.push(`- Wattage: ${fmt(inp.panel.w)} W`);
-    lines.push(`- VOC: ${fmt(inp.panel.voc, 1)} V`);
+    lines.push(`- VOC: ${fmt(inp.panel.voc, 2)} V`);
     lines.push("");
     lines.push(`## Option ${idx + 1}: ${opt.type}`);
     lines.push(`- Type: ${opt.type}`);
-    lines.push(`- Total VOC: ${fmt(opt.totalVoc, 1)} V`);
+    lines.push(`- Total VOC: ${fmt(opt.totalVoc, 2)} V`);
     lines.push(`- Total wattage: ${fmt(opt.totalW)} W`);
     lines.push(`- Number of panels: ${opt.totalPanels}`);
     lines.push(`- Description: ${opt.desc}`);
